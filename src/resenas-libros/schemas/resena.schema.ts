@@ -104,7 +104,8 @@ export class Resena {
 export const ResenaSchema = SchemaFactory.createForClass(Resena);
 
 // Índices compuestos para optimización
-ResenaSchema.index({ idLibro: 1, idUsuario: 1 }, { unique: true });
+// Se eliminó la restricción unique para permitir múltiples reseñas por usuario y libro
+ResenaSchema.index({ idLibro: 1, idUsuario: 1 });  // Ya no es único
 ResenaSchema.index({ idLibro: 1, calificacion: -1 });
 ResenaSchema.index({ idUsuario: 1, fechaCreacion: -1 });
 ResenaSchema.index({ estado: 1, estaActivo: 1 });
