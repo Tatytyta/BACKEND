@@ -9,6 +9,7 @@ import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { FaviconController } from './favicon.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ResenasLibrosModule } from './resenas-libros/resenas-libros.module';
 import { ActividadUsuariosModule } from './actividad-usuarios/actividad-usuarios.module';
@@ -54,7 +55,7 @@ import { CommonModule } from './common/common.module';
     ResenasLibrosModule,
     ActividadUsuariosModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, FaviconController],
   providers: [AppService],
 })
 export class AppModule {}
