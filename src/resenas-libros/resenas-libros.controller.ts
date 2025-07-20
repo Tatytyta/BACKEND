@@ -18,6 +18,7 @@ import {
 } from '@nestjs/common';
 import { ResenasLibrosService, PaginationResult, EstadisticasResenas } from './resenas-libros.service';
 import { CrearResenaDto } from './dto/crear-resena.dto';
+import { CrearResenaMultipleDto } from './dto/crear-resena-multiple.dto';
 import { ActualizarResenaDto, DarMeGustaDto, ReportarResenaDto, FiltroResenasDto } from './dto/actualizar-resena.dto';
 import { SuccessResponseDto } from '../common/dto/response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -39,6 +40,23 @@ export class ResenasLibrosController {
 
     const resena = await this.resenasService.crear(dto);
     return new SuccessResponseDto('Reseña creada exitosamente', resena);
+  }
+  
+  @Post('multiple')
+  @HttpCode(HttpStatus.CREATED)
+  async crearMultiple(@Body() dto: CrearResenaMultipleDto, @Request() req): Promise<SuccessResponseDto<Resena>> {
+    // Si no se especifica el usuario, usar el del token
+    if (!dto.idUsuario && req.user?.id) {
+      dto.idUsuario = req.user.id;
+    }
+    
+    // Generar un identificador único si no viene en el DTO
+    if (!dto.identificadorUnico) {
+      dto.identificadorUnico = new Date().toISOString();
+    }
+    
+    const resena = await this.resenasService.crearMultiple(dto);
+    return new SuccessResponseDto('Reseña múltiple creada exitosamente', resena);
   }
 
   @Get()
