@@ -8,8 +8,12 @@ import {
   Param, 
   Query, 
   BadRequestException,
-  ParseIntPipe
+  ParseIntPipe,
+  UseGuards
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateEstanteriaDto } from './dto/create-estanteria.dto';
 import { UpdateEstanteriaDto } from './dto/update-estanteria.dto';
 import { SuccessResponseDto } from '../common/dto/response.dto';
@@ -20,10 +24,13 @@ import { Estanteria } from './estanterias.entity';
 import { EstanteriasService } from './estanterias.service';
 
 @Controller('estanterias')
+@UseGuards(JwtAuthGuard)
 export class EstanteriasController {
   constructor(private readonly estanteriasService: EstanteriasService) { }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'administrador', 'bibliotecario')
   async create(@Body() dto: CreateEstanteriaDto) {
     const estanteria = await this.estanteriasService.create(dto);
     return new SuccessResponseDto(RESPONSE_MESSAGES.CREATED, estanteria);

@@ -26,7 +26,7 @@ export class PrestamosController {
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'bibliotecario')
+    @Roles('admin', 'administrador', 'bibliotecario')
     async create(@Body() createPrestamoDto: CreatePrestamoDto) {
         const data = await this.prestamosService.create(createPrestamoDto);
         return {
@@ -98,7 +98,7 @@ export class PrestamosController {
 
     @Get('estadisticas')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'bibliotecario')
+    @Roles('admin', 'administrador', 'bibliotecario')
     async getEstadisticas() {
         const data = await this.prestamosService.getEstadisticas();
         return {
@@ -160,7 +160,7 @@ export class PrestamosController {
 
     @Delete(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @Roles('admin', 'administrador')
     async remove(@Param('id', ParseIntPipe) id: number) {
         await this.prestamosService.remove(id);
         return {
@@ -170,7 +170,7 @@ export class PrestamosController {
 
     @Post('actualizar-vencidos')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'bibliotecario')
+    @Roles('admin', 'administrador', 'bibliotecario')
     async actualizarVencidos() {
         const actualizados = await this.prestamosService.actualizarPrestamosVencidos();
         return {

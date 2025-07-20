@@ -29,7 +29,7 @@ export class LibrosController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles('admin', 'bibliotecario')
+  @Roles('admin', 'administrador', 'bibliotecario')
   async create(@Body() createLibroDto: CreateLibroDto) {
     const libro = await this.librosService.create(createLibroDto);
     return {
