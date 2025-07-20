@@ -33,17 +33,7 @@ export class ResenasLibrosService {
 
   async crear(dto: CrearResenaDto): Promise<Resena> {
     try {
-      // Verificar si el usuario ya reseñó este libro
-      const resenaExistente = await this.resenaModel.findOne({
-        idUsuario: dto.idUsuario,
-        idLibro: dto.idLibro,
-        estaActivo: true
-      });
-
-      if (resenaExistente) {
-        throw new ConflictException('El usuario ya ha reseñado este libro');
-      }
-
+      
       const nuevaResena = new this.resenaModel({
         ...dto,
         fechaCreacion: new Date(),
