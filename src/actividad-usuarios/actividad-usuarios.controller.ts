@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Delete,
   Param,
   Body,
@@ -16,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { ActividadUsuariosService } from './actividad-usuarios.service';
 import { RegistrarActividadDto } from './dto/registrar-actividad.dto';
+import { ActualizarActividadDto } from './dto/actualizar-actividad.dto';
 import { ObtenerActividadesDto, EstadisticasActividadDto } from './dto/obtener-actividades.dto';
 import { SuccessResponseDto } from '../common/dto/response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -225,6 +227,28 @@ export class ActividadUsuariosController {
         throw error;
       }
       throw new BadRequestException('Error al eliminar el evento');
+    }
+  }
+  
+  @Put('usuario/:idUsuario/evento/:eventoId')
+  @UseGuards(RolesGuard)
+  @Roles('administrador')
+  async actualizarEventoUsuario(
+    @Param('idUsuario', ParseIntPipe) idUsuario: number,
+    @Param('eventoId') eventoId: string,
+    @Body(ValidationPipe) dto: ActualizarActividadDto
+  ) {
+    try {
+      const actividad = await this.servicio.actualizarEvento(idUsuario, eventoId, dto);
+      if (!actividad) {
+        throw new NotFoundException('Evento no encontrado o no se pudo actualizar');
+      }
+      return new SuccessResponseDto('Evento actualizado correctamente', actividad);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(`Error al actualizar el evento: ${error.message}`);
     }
   }
 

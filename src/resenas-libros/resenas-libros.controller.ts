@@ -22,6 +22,8 @@ import { CrearResenaMultipleDto } from './dto/crear-resena-multiple.dto';
 import { ActualizarResenaDto, DarMeGustaDto, ReportarResenaDto, FiltroResenasDto } from './dto/actualizar-resena.dto';
 import { SuccessResponseDto } from '../common/dto/response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { Resena } from './schemas/resena.schema';
 
 @Controller('resenas-libros')
@@ -199,24 +201,18 @@ export class ResenasLibrosController {
 
   @Patch(':id/aprobar')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'administrador')
   async aprobar(@Param('id') id: string, @Request() req): Promise<SuccessResponseDto<Resena>> {
-    // Solo admins pueden aprobar
-    if (req.user.role !== 'admin') {
-      throw new Error('No tienes permisos para aprobar reseñas');
-    }
-
     const resena = await this.resenasService.aprobar(id);
     return new SuccessResponseDto('Reseña aprobada correctamente', resena);
   }
 
   @Patch(':id/rechazar')
   @HttpCode(HttpStatus.OK)
-  async rechazar(@Param('id') id: string, @Request() req): Promise<SuccessResponseDto<Resena>> {
-    // Solo admins pueden rechazar
-    if (req.user.role !== 'admin') {
-      throw new Error('No tienes permisos para rechazar reseñas');
-    }
-
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'administrador')
+  async rechazar(@Param('id') id: string): Promise<SuccessResponseDto<Resena>> {
     const resena = await this.resenasService.rechazar(id);
     return new SuccessResponseDto('Reseña rechazada correctamente', resena);
   }

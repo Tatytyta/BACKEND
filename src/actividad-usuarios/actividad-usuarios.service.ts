@@ -291,4 +291,34 @@ export class ActividadUsuariosService {
       return 0;
     }
   }
+  
+  async actualizarEvento(idUsuario: number, eventoId: string, datosActualizacion: any): Promise<ActividadUsuario | null> {
+    try {
+      const resultado = await this.modelo.findOneAndUpdate(
+        { 
+          idUsuario,
+          "eventos._id": eventoId 
+        },
+        { 
+          $set: {
+            "eventos.$.tipo": datosActualizacion.tipo,
+            "eventos.$.descripcion": datosActualizacion.descripcion,
+            "eventos.$.consulta": datosActualizacion.consulta,
+            "eventos.$.metadata": datosActualizacion.metadata,
+            "eventos.$.fechaActualizacion": new Date()
+          },
+        },
+        { new: true }
+      );
+      
+      if (!resultado) {
+        throw new NotFoundException('Evento no encontrado o no pertenece al usuario especificado');
+      }
+      
+      return resultado;
+    } catch (err) {
+      console.error('Error al actualizar evento de actividad:', err);
+      return null;
+    }
+  }
 }
