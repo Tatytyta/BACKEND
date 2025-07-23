@@ -55,12 +55,11 @@ export class LibrosService {
 
   async findAll() {
     try {
-      return await this.libroRepository.find({
-        relations: ['genero']
-      });
+      const libros = await this.libroRepository.find();
+      return libros;
     } catch (error) {
-      console.error('Error en findAll de LibrosService:', error);
-      throw error;
+      console.error('Error al obtener libros:', error);
+      throw new Error('Error al obtener libros');
     }
   }
 

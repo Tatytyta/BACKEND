@@ -28,13 +28,11 @@ export class GenerosService {
 
   async findAll() {
     try {
-      return await this.generoRepository.find({
-        relations: ['libros'],
-        order: { nombre: 'ASC' }
-      });
+      const generos = await this.generoRepository.find();
+      return generos;
     } catch (error) {
-      console.error('Error en findAll de GenerosService:', error);
-      throw error;
+      console.error('Error al obtener géneros:', error);
+      throw new Error('Error al obtener géneros');
     }
   }
 

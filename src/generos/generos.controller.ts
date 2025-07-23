@@ -14,13 +14,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { GenerosService } from './generos.service';
+import { SuccessResponseDto } from '../common/dto/response.dto';
 import { CreateGeneroDto } from './dto/create-genero.dto';
 import { UpdateGeneroDto } from './dto/update-genero.dto';
 import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
 import { UseInterceptors } from '@nestjs/common';
 
 @Controller('generos')
-@UseInterceptors(ResponseInterceptor)
 @UseGuards(JwtAuthGuard)
 export class GenerosController {
   constructor(private readonly generosService: GenerosService) {}
@@ -37,8 +37,9 @@ export class GenerosController {
   }
 
   @Get()
-  findAll() {
-    return this.generosService.findAll();
+  async findAll() {
+    const generos = await this.generosService.findAll();
+    return new SuccessResponseDto('Géneros obtenidos correctamente', generos);
   }
   
   @Put('test/:id')

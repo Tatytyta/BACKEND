@@ -70,13 +70,11 @@ export class PrestamosService {
 
   async findAll() {
     try {
-      return await this.prestamoRepository.find({
-        relations: ['usuario', 'libro', 'libro.genero'],
-        order: { fechaInicio: 'DESC' }
-      });
+      const prestamos = await this.prestamoRepository.find();
+      return prestamos;
     } catch (error) {
-      console.error('Error en findAll de PrestamosService:', error);
-      throw error;
+      console.error('Error al obtener préstamos:', error);
+      throw new Error('Error al obtener préstamos');
     }
   }
 

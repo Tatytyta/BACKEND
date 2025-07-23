@@ -6,8 +6,10 @@ import { FiltroPrestamosDto } from './dto/filtro-prestamos.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { SuccessResponseDto } from '../common/dto/response.dto';
 
 @Controller('prestamos')
+@UseGuards(JwtAuthGuard)
 export class PrestamosController {
   constructor(private readonly prestamosService: PrestamosService) {}
 
@@ -19,8 +21,9 @@ export class PrestamosController {
   }
 
   @Get()
-  findAll() {
-    return this.prestamosService.findAll();
+  async findAll() {
+    const prestamos = await this.prestamosService.findAll();
+    return new SuccessResponseDto('Préstamos obtenidos correctamente', prestamos);
   }
 
   @Get('activos')

@@ -6,8 +6,10 @@ import { FiltroLibrosDto } from './dto/filtro-libros.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { SuccessResponseDto } from '../common/dto/response.dto';
 
 @Controller('libros')
+@UseGuards(JwtAuthGuard)
 export class LibrosController {
   constructor(private readonly librosService: LibrosService) {}
 
@@ -19,8 +21,9 @@ export class LibrosController {
   }
 
   @Get()
-  findAll() {
-    return this.librosService.findAll();
+  async findAll() {
+    const libros = await this.librosService.findAll();
+    return new SuccessResponseDto('Libros obtenidos correctamente', libros);
   }
 
   @Get('disponibles')
