@@ -62,6 +62,30 @@ export class SetupController {
     }
   }
 
+  @Get('users')
+  async getUsers() {
+    try {
+      const result = await this.dataSource.query(`
+        SELECT id, username, email, role, activo, created_at
+        FROM usuarios 
+        WHERE role = 'administrador'
+        ORDER BY created_at DESC
+        LIMIT 5
+      `);
+      
+      return {
+        message: 'Usuarios administradores',
+        data: result
+      };
+    } catch (error) {
+      return {
+        message: 'Error al obtener usuarios',
+        error: error.message,
+        data: []
+      };
+    }
+  }
+
   @Get('status')
   async getSetupStatus() {
     try {
