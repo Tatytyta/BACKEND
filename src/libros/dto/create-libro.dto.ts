@@ -15,18 +15,25 @@ export class CreateLibroDto {
 
     @IsNumber()
     @IsPositive()
-    generoId: number;
-
-    @IsNumber()
-    @IsPositive()
-    estanteriaId: number;
+    @IsOptional()
+    generoId?: number;
 
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    ejemplaresDisponibles?: number = 1;
+    ejemplaresDisponibles?: number;
+
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    ejemplaresTotales?: number;
 
     @IsDateString()
     @IsOptional()
     fechaPublicacion?: Date;
+
+    @IsString()
+    @IsOptional()
+    @Length(0, 1000)
+    descripcion?: string;
 }

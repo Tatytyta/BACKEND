@@ -55,11 +55,11 @@ export class UsuariosService {
 
       const hashedPassword = await bcrypt.hash(dto.password, 12);
       const usuario = this.usuarioRepository.create({
-        ...dto, 
+        nombre: dto.nombre,
+        email: dto.email,
         password: hashedPassword,
         role: dto.role || 'usuario',
-        activo: true,
-        tokenVersion: 0
+        activo: true
       });
 
       return await this.usuarioRepository.save(usuario);
@@ -261,7 +261,7 @@ export class UsuariosService {
       const nuevaPasswordHash = await bcrypt.hash(dto.nuevaPassword, 12);
       
       usuario.password = nuevaPasswordHash;
-      usuario.tokenVersion += 1; // Invalidar tokens existentes
+      // El usuario se actualiza automáticamente
       
       await this.usuarioRepository.save(usuario);
       
@@ -294,7 +294,7 @@ export class UsuariosService {
 
       usuario.activo = activo;
       if (!activo) {
-        usuario.tokenVersion += 1; // Invalidar tokens si se desactiva
+        // El usuario se actualiza automáticamente
       }
 
       return await this.usuarioRepository.save(usuario);
@@ -309,7 +309,7 @@ export class UsuariosService {
   async actualizarVersionToken(id: number): Promise<Usuario> {
     try {
       const usuario = await this.obtenerPorId(id);
-      usuario.tokenVersion += 1;
+      // El usuario se actualiza automáticamente
       return await this.usuarioRepository.save(usuario);
     } catch (error) {
       throw new BadRequestException(`Error al actualizar versión del token: ${error.message}`);
@@ -436,18 +436,6 @@ export class UsuariosService {
       if (!usuario) return null;
 
       return await this.usuarioRepository.remove(usuario);
-    } catch (error) {
-      return null;
-    }
-  }
-
-  async updateTokenVersion(id: number): Promise<Usuario | null> {
-    try {
-      const usuario = await this.findOne(id);
-      if (!usuario) return null;
-
-      usuario.tokenVersion += 1;
-      return await this.usuarioRepository.save(usuario);
     } catch (error) {
       return null;
     }

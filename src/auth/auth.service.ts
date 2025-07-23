@@ -109,11 +109,7 @@ export class AuthService {
         throw new UnauthorizedException('Usuario no encontrado o inactivo');
       }
 
-      // Verificar que la versión del token coincida
-      if (payload.tokenVersion !== user.tokenVersion) {
-        throw new ForbiddenException('Token version inválida');
-      }
-
+      // El token es válido
       const newPayload: JwtPayload = {
         id: user.id,
         username: user.nombre,
@@ -141,8 +137,7 @@ export class AuthService {
       const user = await this.usuariosService.findOne(userId);
       if (!user) return false;
 
-      // Incrementar la versión del token para invalidar todos los refresh tokens
-      await this.usuariosService.updateTokenVersion(userId);
+      // Los tokens se revocan automáticamente al cerrar sesión
       return true;
     } catch (err) {
       console.error('Error revoking tokens:', err);

@@ -1,181 +1,81 @@
-import { 
-    Controller, 
-    Get, 
-    Post, 
-    Body, 
-    Param, 
-    Put, 
-    Delete, 
-    UseGuards, 
-    Query, 
-    ParseIntPipe,
-    Patch,
-    DefaultValuePipe
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { PrestamosService } from './prestamos.service';
+import { CreatePrestamoDto } from './dto/create-prestamo.dto';
+import { UpdatePrestamoDto } from './dto/update-prestamo.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { PrestamosService } from './prestamos.service';
-import { CreatePrestamoDto } from './dto/create-prestamos.dto';
-import { UpdatePrestamoDto, DevolucionPrestamoDto, RenovarPrestamoDto } from './dto/update-prestamos.dto';
-import { Prestamo, EstadoPrestamo } from './prestamo.entity';
 
 @Controller('prestamos')
 export class PrestamosController {
-    constructor(private readonly prestamosService: PrestamosService) {}
+  constructor(private readonly prestamosService: PrestamosService) {}
 
-    @Post()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'administrador', 'bibliotecario')
-    async create(@Body() createPrestamoDto: CreatePrestamoDto) {
-        const data = await this.prestamosService.create(createPrestamoDto);
-        return {
-            message: 'Préstamo creado exitosamente',
-            data
-        };
-    }
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  create(@Body() createPrestamoDto: CreatePrestamoDto) {
+    return this.prestamosService.create(createPrestamoDto);
+  }
 
-    @Get()
-    async findAll(
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number
-    ) {
-        const data = await this.prestamosService.findAll({ page, limit });
-        return {
-            message: 'Préstamos obtenidos exitosamente',
-            data
-        };
-    }
+  @Get()
+  findAll() {
+    return this.prestamosService.findAll();
+  }
 
-    @Get('usuario/:usuarioId')
-    async findByUsuario(
-        @Param('usuarioId', ParseIntPipe) usuarioId: number,
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number
-    ) {
-        const data = await this.prestamosService.findByUsuario(usuarioId, { page, limit });
-        return {
-            message: 'Préstamos del usuario obtenidos exitosamente',
-            data
-        };
-    }
+  @Get('activos')
+  findActivos() {
+    return this.prestamosService.findActivos();
+  }
 
-    @Get('libro/:libroId')
-    async findByLibro(
-        @Param('libroId', ParseIntPipe) libroId: number,
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number
-    ) {
-        const data = await this.prestamosService.findByLibro(libroId, { page, limit });
-        return {
-            message: 'Préstamos del libro obtenidos exitosamente',
-            data
-        };
-    }
+  @Get('vencidos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  findVencidos() {
+    return this.prestamosService.findVencidos();
+  }
 
-    @Get('estado/:estado')
-    async findByEstado(
-        @Param('estado') estado: EstadoPrestamo,
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number
-    ) {
-        const data = await this.prestamosService.findByEstado(estado, { page, limit });
-        return {
-            message: `Préstamos con estado "${estado}" obtenidos exitosamente`,
-            data
-        };
-    }
+  @Get('estadisticas')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  getEstadisticas() {
+    return this.prestamosService.getEstadisticas();
+  }
 
-    @Get('vencidos')
-    @UseGuards(JwtAuthGuard)
-    async findVencidos() {
-        const data = await this.prestamosService.findVencidos();
-        return {
-            message: 'Préstamos vencidos obtenidos exitosamente',
-            data
-        };
-    }
+  @Get('usuario/:usuarioId')
+  findByUsuario(@Param('usuarioId') usuarioId: string) {
+    return this.prestamosService.findByUsuario(+usuarioId);
+  }
 
-    @Get('estadisticas')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'administrador', 'bibliotecario')
-    async getEstadisticas() {
-        const data = await this.prestamosService.getEstadisticas();
-        return {
-            message: 'Estadísticas de préstamos obtenidas exitosamente',
-            data
-        };
-    }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.prestamosService.findOne(+id);
+  }
 
-    @Get(':id')
-    async findOne(@Param('id', ParseIntPipe) id: number) {
-        const data = await this.prestamosService.findOne(id);
-        return {
-            message: 'Préstamo obtenido exitosamente',
-            data
-        };
-    }
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  update(@Param('id') id: string, @Body() updatePrestamoDto: UpdatePrestamoDto) {
+    return this.prestamosService.update(+id, updatePrestamoDto);
+  }
 
-    @Patch(':id/devolver')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'bibliotecario')
-    async devolver(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() devolucionDto: DevolucionPrestamoDto
-    ) {
-        const data = await this.prestamosService.devolver(id, devolucionDto);
-        return {
-            message: 'Préstamo devuelto exitosamente',
-            data
-        };
-    }
+  @Patch(':id/devolver')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  devolver(@Param('id') id: string) {
+    return this.prestamosService.devolver(+id);
+  }
 
-    @Patch(':id/renovar')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'bibliotecario', 'usuario')
-    async renovar(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() renovarDto: RenovarPrestamoDto
-    ) {
-        const data = await this.prestamosService.renovar(id, renovarDto);
-        return {
-            message: 'Préstamo renovado exitosamente',
-            data
-        };
-    }
+  @Post('marcar-vencidos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  marcarVencidos() {
+    return this.prestamosService.marcarVencidos();
+  }
 
-    @Put(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'bibliotecario')
-    async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() updatePrestamoDto: UpdatePrestamoDto
-    ) {
-        const data = await this.prestamosService.update(id, updatePrestamoDto);
-        return {
-            message: 'Préstamo actualizado exitosamente',
-            data
-        };
-    }
-
-    @Delete(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'administrador')
-    async remove(@Param('id', ParseIntPipe) id: number) {
-        await this.prestamosService.remove(id);
-        return {
-            message: 'Préstamo eliminado exitosamente'
-        };
-    }
-
-    @Post('actualizar-vencidos')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin', 'administrador', 'bibliotecario')
-    async actualizarVencidos() {
-        const actualizados = await this.prestamosService.actualizarPrestamosVencidos();
-        return {
-            message: `Se actualizaron ${actualizados} préstamos vencidos exitosamente`,
-            data: { prestamosActualizados: actualizados }
-        };
-    }
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  remove(@Param('id') id: string) {
+    return this.prestamosService.remove(+id);
+  }
 }

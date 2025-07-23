@@ -1,12 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { paginate, IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
-import { Libro } from './libros.entity';
+import { Libro } from './libro.entity';
+import { Genero } from '../generos/genero.entity';
 import { CreateLibroDto } from './dto/create-libro.dto';
 import { UpdateLibroDto } from './dto/update-libro.dto';
-import { Genero } from '../generos/genero.entity';
-import { Estanteria } from '../estanterias/estanterias.entity';
 
 @Injectable()
 export class LibrosService {
@@ -15,221 +13,152 @@ export class LibrosService {
     private readonly libroRepository: Repository<Libro>,
     @InjectRepository(Genero)
     private readonly generoRepository: Repository<Genero>,
-    @InjectRepository(Estanteria)
-    private readonly estanteriaRepository: Repository<Estanteria>,
   ) {}
 
   async create(createLibroDto: CreateLibroDto): Promise<Libro> {
-    // Verificar si ya existe un libro con el mismo ISBN
+    // Verificar si el ISBN ya existe
     const existingLibro = await this.libroRepository.findOne({
-      where: { ISBN: createLibroDto.ISBN },
+      where: { ISBN: createLibroDto.ISBN }
     });
 
     if (existingLibro) {
       throw new ConflictException('Ya existe un libro con este ISBN');
     }
 
-    // Validar que el género existe
-    const genero = await this.generoRepository.findOne({
-      where: { id: createLibroDto.generoId },
-    });
-
-    if (!genero) {
-      throw new BadRequestException('El género especificado no existe');
+    // Buscar el género si se proporciona
+    let genero: Genero | undefined = undefined;
+    if (createLibroDto.generoId) {
+      const foundGenero = await this.generoRepository.findOne({
+        where: { id: createLibroDto.generoId }
+      });
+      if (!foundGenero) {
+        throw new NotFoundException('Género no encontrado');
+      }
+      genero = foundGenero;
     }
 
-    // Validar que la estantería existe
-    const estanteria = await this.estanteriaRepository.findOne({
-      where: { id: createLibroDto.estanteriaId },
-    });
-
-    if (!estanteria) {
-      throw new BadRequestException('La estantería especificada no existe');
-    }
-
-    // Crear el libro
     const libro = this.libroRepository.create({
-      ...createLibroDto,
+      titulo: createLibroDto.titulo,
+      autor: createLibroDto.autor,
+      ISBN: createLibroDto.ISBN,
+      ejemplaresDisponibles: createLibroDto.ejemplaresDisponibles || 1,
+      ejemplaresTotales: createLibroDto.ejemplaresTotales || 1,
+      fechaPublicacion: createLibroDto.fechaPublicacion,
+      descripcion: createLibroDto.descripcion,
       genero,
-      estanteria,
+      disponible: (createLibroDto.ejemplaresDisponibles || 1) > 0
     });
 
     return await this.libroRepository.save(libro);
   }
 
-  async findAll(options: IPaginationOptions): Promise<Pagination<Libro>> {
-    const query = this.libroRepository.createQueryBuilder('libro')
-      .leftJoinAndSelect('libro.genero', 'genero')
-      .leftJoinAndSelect('libro.estanteria', 'estanteria')
-      .leftJoinAndSelect('libro.prestamos', 'prestamos')
-      .orderBy('libro.titulo', 'ASC');
-
-    return await paginate<Libro>(query, options);
+  async findAll(): Promise<Libro[]> {
+    return await this.libroRepository.find({
+      relations: ['genero', 'prestamos'],
+      order: { titulo: 'ASC' }
+    });
   }
 
   async findOne(id: number): Promise<Libro> {
     const libro = await this.libroRepository.findOne({
       where: { id },
-      relations: ['genero', 'estanteria', 'prestamos'],
+      relations: ['genero', 'prestamos']
     });
 
     if (!libro) {
-      throw new NotFoundException(`Libro con ID ${id} no encontrado`);
+      throw new NotFoundException('Libro no encontrado');
     }
 
     return libro;
   }
 
-  async findByISBN(ISBN: string): Promise<Libro | null> {
-    return await this.libroRepository.findOne({
-      where: { ISBN },
-      relations: ['genero', 'estanteria', 'prestamos'],
-    });
-  }
-
-  async findByTitle(titulo: string): Promise<Libro[]> {
-    return await this.libroRepository.createQueryBuilder('libro')
-      .leftJoinAndSelect('libro.genero', 'genero')
-      .leftJoinAndSelect('libro.estanteria', 'estanteria')
-      .where('libro.titulo ILIKE :titulo', { titulo: `%${titulo}%` })
-      .orderBy('libro.titulo', 'ASC')
-      .getMany();
-  }
-
-  async findByAutor(autor: string): Promise<Libro[]> {
-    return await this.libroRepository.createQueryBuilder('libro')
-      .leftJoinAndSelect('libro.genero', 'genero')
-      .leftJoinAndSelect('libro.estanteria', 'estanteria')
-      .where('libro.autor ILIKE :autor', { autor: `%${autor}%` })
-      .orderBy('libro.titulo', 'ASC')
-      .getMany();
-  }
-
   async findByGenero(generoId: number): Promise<Libro[]> {
     return await this.libroRepository.find({
       where: { genero: { id: generoId } },
-      relations: ['genero', 'estanteria', 'prestamos'],
-      order: { titulo: 'ASC' },
-    });
-  }
-
-  async findByEstanteria(estanteriaId: number): Promise<Libro[]> {
-    return await this.libroRepository.find({
-      where: { estanteria: { id: estanteriaId } },
-      relations: ['genero', 'estanteria', 'prestamos'],
-      order: { titulo: 'ASC' },
+      relations: ['genero'],
+      order: { titulo: 'ASC' }
     });
   }
 
   async findDisponibles(): Promise<Libro[]> {
-    return await this.libroRepository.createQueryBuilder('libro')
-      .leftJoinAndSelect('libro.genero', 'genero')
-      .leftJoinAndSelect('libro.estanteria', 'estanteria')
-      .where('libro.ejemplaresDisponibles > 0')
-      .orderBy('libro.titulo', 'ASC')
-      .getMany();
+    return await this.libroRepository.find({
+      where: { disponible: true, ejemplaresDisponibles: 1 },
+      relations: ['genero'],
+      order: { titulo: 'ASC' }
+    });
   }
 
   async update(id: number, updateLibroDto: UpdateLibroDto): Promise<Libro> {
     const libro = await this.findOne(id);
 
-    // Verificar ISBN único si se está cambiando
+    // Si se actualiza el ISBN, verificar que no exista otro libro con ese ISBN
     if (updateLibroDto.ISBN && updateLibroDto.ISBN !== libro.ISBN) {
       const existingLibro = await this.libroRepository.findOne({
-        where: { ISBN: updateLibroDto.ISBN },
+        where: { ISBN: updateLibroDto.ISBN }
       });
-
       if (existingLibro) {
         throw new ConflictException('Ya existe un libro con este ISBN');
       }
     }
 
-    // Validar género si se está cambiando
+    // Si se actualiza el género
     if (updateLibroDto.generoId) {
       const genero = await this.generoRepository.findOne({
-        where: { id: updateLibroDto.generoId },
+        where: { id: updateLibroDto.generoId }
       });
-
       if (!genero) {
-        throw new BadRequestException('El género especificado no existe');
+        throw new NotFoundException('Género no encontrado');
       }
       libro.genero = genero;
     }
 
-    // Validar estantería si se está cambiando
-    if (updateLibroDto.estanteriaId) {
-      const estanteria = await this.estanteriaRepository.findOne({
-        where: { id: updateLibroDto.estanteriaId },
-      });
-
-      if (!estanteria) {
-        throw new BadRequestException('La estantería especificada no existe');
-      }
-      libro.estanteria = estanteria;
+    // Actualizar disponibilidad basada en ejemplares disponibles
+    if (updateLibroDto.ejemplaresDisponibles !== undefined) {
+      libro.disponible = updateLibroDto.ejemplaresDisponibles > 0;
     }
 
-    // Actualizar campos
     Object.assign(libro, updateLibroDto);
-
     return await this.libroRepository.save(libro);
   }
 
   async remove(id: number): Promise<void> {
     const libro = await this.findOne(id);
+    
+    // Verificar si tiene préstamos activos
+    const prestamosActivos = libro.prestamos?.filter(
+      prestamo => prestamo.estado === 'activo'
+    );
 
-    // Verificar si el libro tiene préstamos activos
-    if (libro.prestamos && libro.prestamos.length > 0) {
-      throw new ConflictException(
-        'No se puede eliminar el libro porque tiene préstamos asociados'
-      );
+    if (prestamosActivos && prestamosActivos.length > 0) {
+      throw new ConflictException('No se puede eliminar un libro con préstamos activos');
     }
 
     await this.libroRepository.remove(libro);
   }
 
-  async updateEjemplaresDisponibles(id: number, cantidad: number): Promise<Libro> {
-    const libro = await this.findOne(id);
-    
-    if (libro.ejemplaresDisponibles + cantidad < 0) {
-      throw new BadRequestException('No hay suficientes ejemplares disponibles');
-    }
-
-    libro.ejemplaresDisponibles += cantidad;
-    return await this.libroRepository.save(libro);
-  }
-
-  async getLibroStats(id: number): Promise<{
-    libro: Libro;
-    prestamosActivos: number;
-    prestamosHistoricos: number;
-    disponibilidad: string;
-  }> {
-    const libro = await this.findOne(id);
-    
-    const prestamosActivos = libro.prestamos.filter(
-      prestamo => !prestamo.fechaDevolucionReal
-    ).length;
-    
-    const prestamosHistoricos = libro.prestamos.length;
-    
-    const disponibilidad = libro.ejemplaresDisponibles > 0 ? 'Disponible' : 'No disponible';
-
-    return {
-      libro,
-      prestamosActivos,
-      prestamosHistoricos,
-      disponibilidad,
-    };
-  }
-
-  async searchLibros(query: string): Promise<Libro[]> {
-    return await this.libroRepository.createQueryBuilder('libro')
+  async search(termino: string): Promise<Libro[]> {
+    return await this.libroRepository
+      .createQueryBuilder('libro')
       .leftJoinAndSelect('libro.genero', 'genero')
-      .leftJoinAndSelect('libro.estanteria', 'estanteria')
-      .where('libro.titulo ILIKE :query', { query: `%${query}%` })
-      .orWhere('libro.autor ILIKE :query', { query: `%${query}%` })
-      .orWhere('libro.ISBN ILIKE :query', { query: `%${query}%` })
+      .where('libro.titulo ILIKE :termino', { termino: `%${termino}%` })
+      .orWhere('libro.autor ILIKE :termino', { termino: `%${termino}%` })
+      .orWhere('libro.ISBN ILIKE :termino', { termino: `%${termino}%` })
       .orderBy('libro.titulo', 'ASC')
       .getMany();
+  }
+
+  async updateDisponibilidad(id: number): Promise<Libro> {
+    const libro = await this.findOne(id);
+    
+    // Contar préstamos activos
+    const prestamosActivos = libro.prestamos?.filter(
+      prestamo => prestamo.estado === 'activo'
+    ).length || 0;
+
+    // Actualizar ejemplares disponibles y disponibilidad
+    libro.ejemplaresDisponibles = Math.max(0, libro.ejemplaresTotales - prestamosActivos);
+    libro.disponible = libro.ejemplaresDisponibles > 0;
+
+    return await this.libroRepository.save(libro);
   }
 }

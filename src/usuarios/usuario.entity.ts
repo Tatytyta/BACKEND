@@ -16,13 +16,10 @@ export class Usuario {
     password: string;
 
     @Column({ default: 'usuario' })
-    role: string;
+    role: string; // 'usuario', 'bibliotecario', 'administrador'
 
     @Column({ default: true })
     activo: boolean;
-
-    @Column({ default: 0 })
-    tokenVersion: number;
 
     @CreateDateColumn()
     createdAt: Date;

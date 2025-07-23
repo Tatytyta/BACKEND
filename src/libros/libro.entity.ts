@@ -1,6 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Genero } from '../generos/genero.entity';
-import { Estanteria } from '../estanterias/estanterias.entity';
 import { Prestamo } from '../prestamos/prestamo.entity';
 
 @Entity('libros')
@@ -20,14 +19,26 @@ export class Libro {
     @ManyToOne(() => Genero, genero => genero.libros)
     genero: Genero;
 
-    @ManyToOne(() => Estanteria, estanteria => estanteria.libros)
-    estanteria: Estanteria;
-
     @Column({ default: 1 })
     ejemplaresDisponibles: number;
 
+    @Column({ default: 1 })
+    ejemplaresTotales: number;
+
+    @Column({ default: true })
+    disponible: boolean;
+
     @Column({ nullable: true })
     fechaPublicacion: Date;
+
+    @Column({ nullable: true })
+    descripcion: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @OneToMany(() => Prestamo, prestamo => prestamo.libro)
     prestamos: Prestamo[];

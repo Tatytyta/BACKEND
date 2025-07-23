@@ -1,5 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { Libro } from '../libros/libros.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Libro } from '../libros/libro.entity';
 
 @Entity('generos')
 export class Genero {
@@ -11,6 +11,12 @@ export class Genero {
 
     @Column({ nullable: true })
     descripcion: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @OneToMany(() => Libro, libro => libro.genero)
     libros: Libro[];

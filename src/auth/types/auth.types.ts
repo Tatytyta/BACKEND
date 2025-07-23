@@ -17,7 +17,6 @@ export interface JwtPayload {
 export interface RefreshTokenPayload {
   id: number;
   username: string;
-  tokenVersion: number;
   iat?: number;
   exp?: number;
 }

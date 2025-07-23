@@ -15,7 +15,6 @@ export class RefreshTokenService {
     const payload: RefreshTokenPayload = {
       id: user.id,
       username: user.nombre,
-      tokenVersion: user.tokenVersion,
     };
 
     return this.jwtService.sign(payload, {

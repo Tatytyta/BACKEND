@@ -1,171 +1,65 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { LibrosService } from './libros.service';
 import { CreateLibroDto } from './dto/create-libro.dto';
 import { UpdateLibroDto } from './dto/update-libro.dto';
-import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
-import { Pagination } from 'nestjs-typeorm-paginate';
-import { Libro } from './libros.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('libros')
-@UseInterceptors(ResponseInterceptor)
-@UseGuards(JwtAuthGuard)
 export class LibrosController {
   constructor(private readonly librosService: LibrosService) {}
 
   @Post()
-  @UseGuards(RolesGuard)
-  @Roles('admin', 'administrador', 'bibliotecario')
-  async create(@Body() createLibroDto: CreateLibroDto) {
-    const libro = await this.librosService.create(createLibroDto);
-    return {
-      message: 'Libro creado exitosamente',
-      data: libro,
-    };
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  create(@Body() createLibroDto: CreateLibroDto) {
+    return this.librosService.create(createLibroDto);
   }
 
   @Get()
-  async findAll(
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-  ) {
-    const result = await this.librosService.findAll({ page, limit });
-    return {
-      message: 'Libros obtenidos exitosamente',
-      data: result,
-    };
+  findAll() {
+    return this.librosService.findAll();
   }
 
   @Get('disponibles')
-  async findDisponibles() {
-    const libros = await this.librosService.findDisponibles();
-    return {
-      message: 'Libros disponibles obtenidos exitosamente',
-      data: libros,
-    };
+  findDisponibles() {
+    return this.librosService.findDisponibles();
   }
 
-  @Get('buscar')
-  async searchLibros(@Query('q') query: string) {
-    const libros = await this.librosService.searchLibros(query);
-    return {
-      message: 'Búsqueda realizada exitosamente',
-      data: libros,
-    };
-  }
-
-  @Get('titulo/:titulo')
-  async findByTitle(@Param('titulo') titulo: string) {
-    const libros = await this.librosService.findByTitle(titulo);
-    return {
-      message: 'Libros encontrados por título',
-      data: libros,
-    };
-  }
-
-  @Get('autor/:autor')
-  async findByAutor(@Param('autor') autor: string) {
-    const libros = await this.librosService.findByAutor(autor);
-    return {
-      message: 'Libros encontrados por autor',
-      data: libros,
-    };
-  }
-
-  @Get('isbn/:isbn')
-  async findByISBN(@Param('isbn') isbn: string) {
-    const libro = await this.librosService.findByISBN(isbn);
-    return {
-      message: libro ? 'Libro encontrado' : 'Libro no encontrado',
-      data: libro,
-    };
+  @Get('search')
+  search(@Query('q') query: string) {
+    return this.librosService.search(query);
   }
 
   @Get('genero/:generoId')
-  async findByGenero(@Param('generoId', ParseIntPipe) generoId: number) {
-    const libros = await this.librosService.findByGenero(generoId);
-    return {
-      message: 'Libros encontrados por género',
-      data: libros,
-    };
-  }
-
-  @Get('estanteria/:estanteriaId')
-  async findByEstanteria(@Param('estanteriaId', ParseIntPipe) estanteriaId: number) {
-    const libros = await this.librosService.findByEstanteria(estanteriaId);
-    return {
-      message: 'Libros encontrados por estantería',
-      data: libros,
-    };
+  findByGenero(@Param('generoId') generoId: string) {
+    return this.librosService.findByGenero(+generoId);
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const libro = await this.librosService.findOne(id);
-    return {
-      message: 'Libro obtenido exitosamente',
-      data: libro,
-    };
+  findOne(@Param('id') id: string) {
+    return this.librosService.findOne(+id);
   }
 
-  @Get(':id/stats')
-  async getLibroStats(@Param('id', ParseIntPipe) id: number) {
-    const stats = await this.librosService.getLibroStats(id);
-    return {
-      message: 'Estadísticas del libro obtenidas exitosamente',
-      data: stats,
-    };
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  update(@Param('id') id: string, @Body() updateLibroDto: UpdateLibroDto) {
+    return this.librosService.update(+id, updateLibroDto);
   }
 
-  @Put(':id')
-  @UseGuards(RolesGuard)
-  @Roles('admin', 'bibliotecario')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateLibroDto: UpdateLibroDto,
-  ) {
-    const libro = await this.librosService.update(id, updateLibroDto);
-    return {
-      message: 'Libro actualizado exitosamente',
-      data: libro,
-    };
-  }
-
-  @Put(':id/ejemplares')
-  @UseGuards(RolesGuard)
-  @Roles('admin', 'bibliotecario')
-  async updateEjemplares(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('cantidad') cantidad: number,
-  ) {
-    const libro = await this.librosService.updateEjemplaresDisponibles(id, cantidad);
-    return {
-      message: 'Ejemplares actualizados exitosamente',
-      data: libro,
-    };
+  @Patch(':id/disponibilidad')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  updateDisponibilidad(@Param('id') id: string) {
+    return this.librosService.updateDisponibilidad(+id);
   }
 
   @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles('admin')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.librosService.remove(id);
-    return {
-      message: 'Libro eliminado exitosamente',
-    };
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('administrador', 'bibliotecario')
+  remove(@Param('id') id: string) {
+    return this.librosService.remove(+id);
   }
 }
