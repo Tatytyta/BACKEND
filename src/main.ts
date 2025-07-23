@@ -9,9 +9,9 @@ async function bootstrap() {
   // Configurar carpeta de archivos estáticos
   app.useStaticAssets(join(__dirname, '..', 'public'));
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3001;
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://tu-frontend-url.com'],
+    origin: ['http://localhost:5173', 'https://tu-frontend-url.com', 'http://localhost:3001'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

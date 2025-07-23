@@ -1,8 +1,0 @@
-POST https://biblioteca-bfb8.onrender.com/auth/register
-
-{
-  "nombre": "Admin3",
-  "email": "admin3@biblioteca.com",
-  "password": "Admin123",
-  "role": "admin"
-}

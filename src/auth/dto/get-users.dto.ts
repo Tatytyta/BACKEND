@@ -19,7 +19,7 @@ export class GetUsersDto {
   @IsString()
   search?: string;
 
-  @IsOptional()
+  
   @IsEnum(['usuario', 'administrador'])
   role?: string;
 
