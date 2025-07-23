@@ -55,6 +55,29 @@ export class SetupController {
     }
   }
 
+  @Get('allusers')
+  async getAllUsers() {
+    try {
+      const result = await this.dataSource.query(`
+        SELECT id, nombre, email, role, activo, "createdAt"
+        FROM usuarios 
+        ORDER BY "createdAt" DESC
+        LIMIT 10
+      `);
+      
+      return {
+        message: 'Todos los usuarios',
+        data: result
+      };
+    } catch (error) {
+      return {
+        message: 'Error al obtener usuarios',
+        error: error.message,
+        data: []
+      };
+    }
+  }
+
   @Get('users')
   async getUsers() {
     try {
