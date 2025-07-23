@@ -9,6 +9,38 @@ export class SetupController {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
+  @Post('reset-admin')
+  async resetAdminPassword() {
+    try {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      
+      const result = await this.dataSource.query(`
+        UPDATE usuarios 
+        SET password = $1, "updatedAt" = NOW()
+        WHERE email = 'admin@bibliotec.com'
+        RETURNING id, email, role
+      `, [hashedPassword]);
+
+      if (result.length > 0) {
+        return {
+          message: 'Contraseña de administrador actualizada exitosamente',
+          data: result[0]
+        };
+      } else {
+        return {
+          message: 'Usuario administrador no encontrado',
+          data: null
+        };
+      }
+    } catch (error) {
+      return {
+        message: 'Error al actualizar contraseña',
+        error: error.message,
+        data: null
+      };
+    }
+  }
+
   @Post('admin')
   async createAdminUser() {
     try {
