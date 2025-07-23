@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { DebugController } from './debug.controller';
+import { PublicController } from './public.controller';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
@@ -24,7 +26,7 @@ import { CommonModule } from './common/common.module';
     PrestamosModule,
     GenerosModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, DebugController, PublicController],
   providers: [AppService],
 })
 export class AppModule {}
