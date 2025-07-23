@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DebugController } from './debug.controller';
 import { PublicController } from './public.controller';
+import { SetupController } from './setup.controller';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
@@ -26,7 +27,7 @@ import { CommonModule } from './common/common.module';
     PrestamosModule,
     GenerosModule,
   ],
-  controllers: [AppController, DebugController, PublicController],
+  controllers: [AppController, DebugController, PublicController, SetupController],
   providers: [AppService],
 })
 export class AppModule {}
