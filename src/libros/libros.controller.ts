@@ -21,9 +21,8 @@ export class LibrosController {
   }
 
   @Get()
-  async findAll() {
-    const libros = await this.librosService.findAll();
-    return new SuccessResponseDto('Libros obtenidos correctamente', libros);
+  findAll() {
+    return this.librosService.findAll();
   }
 
   @Get('disponibles')

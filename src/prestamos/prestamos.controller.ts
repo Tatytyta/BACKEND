@@ -21,9 +21,8 @@ export class PrestamosController {
   }
 
   @Get()
-  async findAll() {
-    const prestamos = await this.prestamosService.findAll();
-    return new SuccessResponseDto('Préstamos obtenidos correctamente', prestamos);
+  findAll() {
+    return this.prestamosService.findAll();
   }
 
   @Get('activos')
