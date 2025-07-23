@@ -12,13 +12,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('DB_HOST', 'localhost'),
-        port: configService.get('DB_PORT', 5432),
-        username: configService.get('DB_USERNAME', 'postgres'),
-        password: configService.get('DB_PASSWORD', 'password'),
+        port: parseInt(configService.get('DB_PORT', '5432')),
+        username: configService.get('DB_USER', configService.get('DB_USERNAME', 'postgres')),
+        password: configService.get('DB_PASS', configService.get('DB_PASSWORD', 'password')),
         database: configService.get('DB_NAME', 'biblioteca'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        synchronize: true, // Solo para desarrollo
-        logging: true,
+        synchronize: process.env.NODE_ENV !== 'production', // Solo en desarrollo
+        logging: process.env.NODE_ENV === 'development',
+        ssl: process.env.NODE_ENV === 'production' ? {
+          rejectUnauthorized: false,
+        } : false,
+        extra: process.env.NODE_ENV === 'production' ? {
+          ssl: {
+            rejectUnauthorized: false,
+          }
+        } : {},
       }),
     }),
     
@@ -27,7 +35,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        uri: configService.get('MONGODB_URI', 'mongodb://localhost:27017/biblioteca'),
+        uri: configService.get('MONGO_URI', configService.get('MONGODB_URI', 'mongodb://localhost:27017/biblioteca')),
       }),
     }),
   ],

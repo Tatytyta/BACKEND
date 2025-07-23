@@ -13,20 +13,22 @@ Configura estas variables en el Dashboard de Render:
 ```
 DB_HOST=tu-postgresql-host.render.com
 DB_PORT=5432
-DB_USERNAME=tu-username
-DB_PASSWORD=tu-password
+DB_USER=tu-username
+DB_PASS=tu-password
 DB_NAME=biblioteca
 ```
 
 #### 🍃 MongoDB (Recomendado: MongoDB Atlas)
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/biblioteca
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/biblioteca
 ```
 
 #### 🔐 JWT y Seguridad
 ```
 JWT_SECRET=tu-secreto-super-seguro-jwt-produccion
+JWT_EXPIRES_IN=1h
 JWT_REFRESH_SECRET=tu-secreto-super-seguro-refresh-produccion
+JWT_REFRESH_EXPIRES_IN=7d
 NODE_ENV=production
 ```
 
