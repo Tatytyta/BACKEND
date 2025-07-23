@@ -6,6 +6,7 @@ import { Usuario } from '../usuarios/usuario.entity';
 import { Libro } from '../libros/libro.entity';
 import { CreatePrestamoDto } from './dto/create-prestamo.dto';
 import { UpdatePrestamoDto } from './dto/update-prestamo.dto';
+import { FiltroPrestamosDto } from './dto/filtro-prestamos.dto';
 
 @Injectable()
 export class PrestamosService {
@@ -67,11 +68,16 @@ export class PrestamosService {
     return savedPrestamo;
   }
 
-  async findAll(): Promise<Prestamo[]> {
-    return await this.prestamoRepository.find({
-      relations: ['usuario', 'libro', 'libro.genero'],
-      order: { fechaInicio: 'DESC' }
-    });
+  async findAll() {
+    try {
+      return await this.prestamoRepository.find({
+        relations: ['usuario', 'libro', 'libro.genero'],
+        order: { fechaInicio: 'DESC' }
+      });
+    } catch (error) {
+      console.error('Error en findAll de PrestamosService:', error);
+      throw error;
+    }
   }
 
   async findOne(id: number): Promise<Prestamo> {

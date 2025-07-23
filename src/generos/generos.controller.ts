@@ -37,12 +37,8 @@ export class GenerosController {
   }
 
   @Get()
-  async findAll() {
-    const generos = await this.generosService.findAll();
-    return {
-      message: 'Géneros obtenidos exitosamente',
-      data: generos,
-    };
+  findAll() {
+    return this.generosService.findAll();
   }
   
   @Put('test/:id')

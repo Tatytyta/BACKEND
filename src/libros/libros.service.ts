@@ -5,6 +5,7 @@ import { Libro } from './libro.entity';
 import { Genero } from '../generos/genero.entity';
 import { CreateLibroDto } from './dto/create-libro.dto';
 import { UpdateLibroDto } from './dto/update-libro.dto';
+import { FiltroLibrosDto } from './dto/filtro-libros.dto';
 
 @Injectable()
 export class LibrosService {
@@ -52,11 +53,15 @@ export class LibrosService {
     return await this.libroRepository.save(libro);
   }
 
-  async findAll(): Promise<Libro[]> {
-    return await this.libroRepository.find({
-      relations: ['genero', 'prestamos'],
-      order: { titulo: 'ASC' }
-    });
+  async findAll() {
+    try {
+      return await this.libroRepository.find({
+        relations: ['genero']
+      });
+    } catch (error) {
+      console.error('Error en findAll de LibrosService:', error);
+      throw error;
+    }
   }
 
   async findOne(id: number): Promise<Libro> {

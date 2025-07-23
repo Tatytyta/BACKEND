@@ -26,11 +26,16 @@ export class GenerosService {
     return await this.generoRepository.save(genero);
   }
 
-  async findAll(): Promise<Genero[]> {
-    return await this.generoRepository.find({
-      relations: ['libros'],
-      order: { nombre: 'ASC' },
-    });
+  async findAll() {
+    try {
+      return await this.generoRepository.find({
+        relations: ['libros'],
+        order: { nombre: 'ASC' }
+      });
+    } catch (error) {
+      console.error('Error en findAll de GenerosService:', error);
+      throw error;
+    }
   }
 
   async findOne(id: number): Promise<Genero> {
