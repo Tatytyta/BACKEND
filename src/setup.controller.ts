@@ -30,20 +30,13 @@ export class SetupController {
       
       const result = await this.dataSource.query(`
         INSERT INTO usuarios (
-          nombre, apellido, email, username, password, telefono, 
-          direccion, fecha_nacimiento, tipo, role, activo, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
-        RETURNING id, username, email, role
+          nombre, email, password, role, activo, "createdAt", "updatedAt"
+        ) VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        RETURNING id, email, role
       `, [
         'Administrador',
-        'Sistema', 
         'admin@biblioteca.com',
-        'admin',
         hashedPassword,
-        '0000000000',
-        'Sistema',
-        '1990-01-01',
-        'admin',
         'administrador',
         true
       ]);
@@ -66,10 +59,10 @@ export class SetupController {
   async getUsers() {
     try {
       const result = await this.dataSource.query(`
-        SELECT id, username, email, role, activo, created_at
+        SELECT id, email, role, activo, "createdAt"
         FROM usuarios 
         WHERE role = 'administrador'
-        ORDER BY created_at DESC
+        ORDER BY "createdAt" DESC
         LIMIT 5
       `);
       
