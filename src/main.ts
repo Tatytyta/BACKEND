@@ -19,22 +19,24 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   
-  // Configurar CORS para producción y desarrollo
+  // Configurar CORS muy permisivo
   const corsOrigins = process.env.NODE_ENV === 'production' 
     ? [
         process.env.CORS_ORIGIN || 'https://frontend-biblioteca.onrender.com',
-        'https://frontend-biblioteca.onrender.com', // URL de tu frontend en Render
-      ]
-    : [
-        'http://localhost:5173',
+        'https://frontend-biblioteca.onrender.com',
+        'https://frontend-biblioteca44-kddsqboy3-damian-herreras-projects.vercel.app',
         'http://localhost:3000',
+        'http://localhost:5173',
         'http://localhost:3001',
-      ];
+      ]
+    : true; // Permitir cualquier origen en desarrollo
 
   app.enableCors({
     origin: corsOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     credentials: true,
+    optionsSuccessStatus: 200,
   });
 
   await app.listen(port, '0.0.0.0');
